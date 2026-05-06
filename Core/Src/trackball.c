@@ -61,6 +61,32 @@ static int8_t apply_acceleration(int8_t steps, float rate, float exponent, float
     return (steps > 0) ? magnitude : (int8_t)(-magnitude);
 }
 
+/* Vector-based acceleration: uses the magnitude of the (dx, dy) vector and the
+   combined rate so the acceleration factor is the same for both axes. This
+   preserves the direction of motion exactly (no per-axis distortion) and makes
+   the cursor speed for diagonal movement match the speed for axis-aligned
+   movement at the same ball speed. */
+static void apply_vector_acceleration(float dx, float dy,
+                                      float rate_x, float rate_y,
+                                      float exponent, float divisor,
+                                      float* out_x, float* out_y)
+{
+    if (dx == 0.0f && dy == 0.0f) {
+        *out_x = 0.0f;
+        *out_y = 0.0f;
+        return;
+    }
+    if (divisor <= 0.0f) {
+        *out_x = dx;
+        *out_y = dy;
+        return;
+    }
+    const float combined_rate = hypot_f(rate_x, rate_y);
+    const float factor = 1.0f + powf(combined_rate, exponent) / divisor;
+    *out_x = dx * factor;
+    *out_y = dy * factor;
+}
+
 #if GLIDER_ENABLED
 static uint16_t glider_sustain_from_speed(float speed)
 {
@@ -148,20 +174,19 @@ USBD_StatusTypeDef trackball_task(void)
             * (HORIZONTAL_SCROLL_INVERTED ? -1 : 1);
         hw = clamp_int8((int32_t)wheel_buffer[AXIS_X]);
     } else {
-        // Pointer movement - X
-        pointer_buffer[AXIS_X] += apply_acceleration(
-            (int32_t)move_delta[AXIS_X],
-            rate[AXIS_X],
-            acceleration_exponent,
-            acceleration_divisor);
+        // Pointer movement - vector-based acceleration so that the direction of
+        // motion is preserved (per-axis acceleration distorts diagonals because
+        // a non-linear curve is applied to two different per-axis rates).
+        float scaled_x = 0.0f;
+        float scaled_y = 0.0f;
+        apply_vector_acceleration(
+            (float)move_delta[AXIS_X], (float)move_delta[AXIS_Y],
+            rate[AXIS_X], rate[AXIS_Y],
+            acceleration_exponent, acceleration_divisor,
+            &scaled_x, &scaled_y);
+        pointer_buffer[AXIS_X] += scaled_x;
+        pointer_buffer[AXIS_Y] += scaled_y;
         x = clamp_int8((int32_t)pointer_buffer[AXIS_X]);
-
-        // Pointer movement - Y
-        pointer_buffer[AXIS_Y] += apply_acceleration(
-            (int32_t)move_delta[AXIS_Y],
-            rate[AXIS_Y],
-            acceleration_exponent,
-            acceleration_divisor);
         y = clamp_int8((int32_t)pointer_buffer[AXIS_Y]);
     }
 
