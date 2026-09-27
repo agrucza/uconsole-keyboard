@@ -25,6 +25,15 @@
  * VARIANT_USB_PRODUCT_STRING  USB product string reported to the host
  * VARIANT_LAYERS_FILE         file with the key bindings, see load_config()
  * VARIANT_HAS_BACKLIGHT       1 if PA8 (BL_CTRL) drives a keyboard backlight
+ * VARIANT_TRACKBALL_SHORT_STROKES
+ *                             how the speed of the trackball is measured, it
+ *                             controls the pointer acceleration.
+ *                             0: running average over many pulses. It needs
+ *                                about ten pulses to follow a change of speed.
+ *                             1: mean of the last two pulse intervals. For a
+ *                                trackball that produces only a few pulses per
+ *                                swipe, where a swipe is over before the
+ *                                running average has caught up.
  * TRACKBALL_HOn_IRQ()         movement reported by hall sensor HOn. The sensor
  *                             pins are HO1 = PC8, HO2 = PC9, HO3 = PC10 and
  *                             HO4 = PC11. The pin labels in main.h (HO_UP_Pin,
@@ -38,6 +47,7 @@
 #define VARIANT_USB_PRODUCT_STRING  "uConsole"
 #define VARIANT_LAYERS_FILE         "layers.h"
 #define VARIANT_HAS_BACKLIGHT       1
+#define VARIANT_TRACKBALL_SHORT_STROKES 0
 
 #define TRACKBALL_HO1_IRQ()         trackball_interrupt_y_neg() /* up */
 #define TRACKBALL_HO2_IRQ()         trackball_interrupt_x_pos() /* right */
@@ -49,6 +59,8 @@
 #define VARIANT_USB_PRODUCT_STRING  "DevTerm"
 #define VARIANT_LAYERS_FILE         "layers_devterm.h"
 #define VARIANT_HAS_BACKLIGHT       0
+/* Measured on a DevTerm: 3 to 6 pulses per swipe, 4 ms apart in a fast flick */
+#define VARIANT_TRACKBALL_SHORT_STROKES 1
 
 #define TRACKBALL_HO1_IRQ()         trackball_interrupt_x_neg() /* left */
 #define TRACKBALL_HO2_IRQ()         trackball_interrupt_y_neg() /* up */

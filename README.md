@@ -206,7 +206,7 @@ This hardware design ensures that modifier keys (Shift, Ctrl, Alt) and gaming co
 
 The DevTerm keyboard uses the same MCU, the same pins, the same bootloader and the same USB IDs as the uConsole keyboard, so the firmware only needs a different key layout and trackball orientation. On a DevTerm the right firmware is built automatically, see [Building](#building).
 
-> **Note:** DevTerm support is derived from the stock DevTerm firmware and the schematics. It builds, but it has not been verified on a real DevTerm yet. Keep a way to recover at hand, see [Unbricking and recovery](#unbricking-and-recovery).
+> **Note:** DevTerm support is new and has only been tested briefly on a real DevTerm. Keep a way to recover at hand, see [Unbricking and recovery](#unbricking-and-recovery).
 
 Everything in this document applies to the DevTerm as well, with these differences:
 
@@ -220,6 +220,8 @@ Everything in this document applies to the DevTerm as well, with these differenc
 | Cmd key | None | `BUTTON_CMD`, bound to Right Meta |
 | Mouse buttons | Left, right | Left, middle (`BUTTON_MOUSE_M`), right |
 | Trackball click | Mouse Middle | Mouse Left |
+| Trackball speed measurement | Running average over many pulses | Mean of the last two pulses. The DevTerm trackball produces only 3 to 6 pulses per swipe, so the speed of a swipe has to be known at once |
+| Scroll speed | `100`, acceleration `0.5f` vertical and `0.3f` horizontal | `50`, acceleration `0.2f`. Lower because a fast flick is recognized as fast |
 | Keyboard backlight | Yes | No, `SK_KEYBOARD_LIGHT` and the backlight settings in `config.h` have no effect |
 | USB product name | `uConsole` | `DevTerm` |
 

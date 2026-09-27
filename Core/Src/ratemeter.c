@@ -7,7 +7,35 @@ void ratemeter_init(RateMeter* rm)
     rm->lastTime = 0;
     rm->averageDelta = 0;
     rm->timeout = 0;
+#if VARIANT_TRACKBALL_SHORT_STROKES
+    rm->lastDelta = 0;
+#endif
 }
+
+#if VARIANT_TRACKBALL_SHORT_STROKES
+
+/* The speed is the mean of the last two pulse intervals, so it is known from
+   the second pulse of a stroke on. The first pulse of a stroke counts as slow. */
+void ratemeter_onInterrupt(RateMeter* rm)
+{
+    const uint64_t now = prec_time_get_us();
+    const uint64_t delta = now - rm->lastTime;
+
+    if (rm->timeout == 0 || delta > STROKE_GAP_US) {
+        rm->averageDelta = STROKE_GAP_US;
+        rm->lastDelta = 0;
+    } else {
+        rm->averageDelta = rm->lastDelta ? (rm->lastDelta + (uint32_t)delta) / 2 : (uint32_t)delta;
+        rm->lastDelta = (uint32_t)delta;
+        if (rm->averageDelta < STROKE_MIN_DELTA_US) {
+            rm->averageDelta = STROKE_MIN_DELTA_US;
+        }
+    }
+    rm->lastTime = now;
+    rm->timeout = CUTOFF_US;
+}
+
+#else
 
 void ratemeter_onInterrupt(RateMeter* rm)
 {
@@ -24,6 +52,8 @@ void ratemeter_onInterrupt(RateMeter* rm)
     rm->lastTime = now;
     rm->timeout = CUTOFF_US;
 }
+
+#endif
 
 void ratemeter_tick(RateMeter* rm, uint32_t delta)
 {
