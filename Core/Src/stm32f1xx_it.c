@@ -223,11 +223,11 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
   if (__HAL_GPIO_EXTI_GET_IT(HO_UP_Pin) != RESET) {
     __HAL_GPIO_EXTI_CLEAR_IT(HO_UP_Pin);
-    trackball_interrupt_y_neg();
+    TRACKBALL_HO1_IRQ();
   }
   if (__HAL_GPIO_EXTI_GET_IT(HO_RIGHT_Pin) != RESET) {
     __HAL_GPIO_EXTI_CLEAR_IT(HO_RIGHT_Pin);
-    trackball_interrupt_x_pos();
+    TRACKBALL_HO2_IRQ();
   }
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(HO_UP_Pin);
@@ -259,11 +259,11 @@ void EXTI15_10_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
   if (__HAL_GPIO_EXTI_GET_IT(HO_DOWN_Pin) != RESET) {
     __HAL_GPIO_EXTI_CLEAR_IT(HO_DOWN_Pin);
-    trackball_interrupt_y_pos();
+    TRACKBALL_HO3_IRQ();
   }
   if (__HAL_GPIO_EXTI_GET_IT(HO_LEFT_Pin) != RESET) {
     __HAL_GPIO_EXTI_CLEAR_IT(HO_LEFT_Pin);
-    trackball_interrupt_x_neg();
+    TRACKBALL_HO4_IRQ();
   }
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(HO_DOWN_Pin);

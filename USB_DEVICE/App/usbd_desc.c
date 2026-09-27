@@ -71,7 +71,10 @@
 #define USBD_INTERFACE_STRING_FS     "Custom HID Interface"
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
-
+/* The product string depends on the keyboard variant, the generated one is for the uConsole */
+#include "keyboard_variant.h"
+#undef USBD_PRODUCT_STRING_FS
+#define USBD_PRODUCT_STRING_FS     VARIANT_USB_PRODUCT_STRING
 /* USER CODE END PRIVATE_DEFINES */
 
 /**

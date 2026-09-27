@@ -2,6 +2,8 @@
 
 This is a clean port of the official uConsole keyboard firmware from [ClockworkPi's repository](https://github.com/clockworkpi/uConsole/tree/master/Code/uconsole_keyboard), rewritten to use **pure STM32 HAL** instead of the messy Arduino/STM32duino framework.
 
+The same firmware can also be built for the **ClockworkPi DevTerm** keyboard, see [DevTerm keyboard](#devterm-keyboard).
+
 
 ## Why This Exists
 
@@ -123,7 +125,7 @@ Switch to this layer with `LeftCtrl`+`RightCtrl`+`3`. All other keys on layer 3 
 
 #### Customizing layers
 
-All layer configuration lives in a single file: `layers.h`. To change bindings or add new layers, edit this file and rebuild the firmware.
+All layer configuration lives in a single file: `layers.h` (`layers_devterm.h` for the DevTerm keyboard). To change bindings or add new layers, edit this file and rebuild the firmware.
 
 **Basic syntax:**
 
@@ -200,6 +202,36 @@ This hardware design ensures that modifier keys (Shift, Ctrl, Alt) and gaming co
 | `HORIZONTAL_SCROLL_INVERTED` | 0 = traditional scrolling, 1 = natural scrolling |
 
 
+## DevTerm keyboard
+
+The DevTerm keyboard uses the same MCU, the same pins, the same bootloader and the same USB IDs as the uConsole keyboard, so the firmware only needs a different key layout and trackball orientation. On a DevTerm the right firmware is built automatically, see [Building](#building).
+
+> **Note:** DevTerm support is derived from the stock DevTerm firmware and the schematics. It builds, but it has not been verified on a real DevTerm yet. Keep a way to recover at hand, see [Unbricking and recovery](#unbricking-and-recovery).
+
+Everything in this document applies to the DevTerm as well, with these differences:
+
+| Topic | uConsole | DevTerm |
+|-------|----------|---------|
+| Layer file | `layers.h` | `layers_devterm.h` |
+| Arrow keys | Non-matrix keys, they are also the D-pad | Matrix keys `BUTTON_UP` etc. |
+| D-pad | Same as the arrow keys | Separate non-matrix keys `BUTTON_GAMEPAD_UP`, `BUTTON_GAMEPAD_DOWN`, `BUTTON_GAMEPAD_LEFT`, `BUTTON_GAMEPAD_RIGHT` |
+| Fn | Two matrix keys `BUTTON_FN_LEFT`, `BUTTON_FN_RIGHT` | One non-matrix key `BUTTON_FN` |
+| Right Shift, Ctrl, Alt | Non-matrix keys | Matrix keys |
+| Cmd key | None | `BUTTON_CMD`, bound to Right Meta |
+| Mouse buttons | Left, right | Left, middle (`BUTTON_MOUSE_M`), right |
+| Trackball click | Mouse Middle | Mouse Left |
+| Keyboard backlight | Yes | No, `SK_KEYBOARD_LIGHT` and the backlight settings in `config.h` have no effect |
+| USB product name | `uConsole` | `DevTerm` |
+
+All other default bindings are the same as on the uConsole, including the Fn combinations, the game layer and the gamepad layer. On the gamepad layer the D-pad sends the gamepad directions and the arrow keys stay arrow keys.
+
+Differences to the stock DevTerm firmware:
+
+- Scrolling is done with Fn + trackball, not with the middle mouse button + trackball.
+- The switch on the back of the keyboard does not select between joystick and keyboard mode any more, use the layers instead.
+- A layer change or Fn Lock is confirmed by blinking the keyboard backlight. The DevTerm has no backlight, so there is no visible confirmation.
+
+
 ## Building
 
 ### Prerequisites
@@ -229,6 +261,30 @@ make flash
 
 Use **`make first_flash`** the **first** time you install this firmware on a keyboard that still runs the original uConsole firmware. After that, use **`make flash`** for updates.
 
+### uConsole or DevTerm
+
+The commands above build the firmware for the keyboard of the device they run on. The keyboard is identified by its USB product name, `uConsole` or `DevTerm`, which works with the original firmware and with this one.
+
+The uConsole firmware is written to `build/uconsole_keyboard.bin` and the DevTerm firmware to `build/devterm/devterm_keyboard.bin`.
+
+Add `KEYBOARD=uconsole` or `KEYBOARD=devterm` to any command to choose the firmware yourself:
+
+```bash
+make all KEYBOARD=devterm
+make flash KEYBOARD=devterm
+```
+
+You have to do this in two cases:
+
+- **The keyboard can't be identified**, because it is already in bootloader mode, because no keyboard is connected, or because you are not on Linux. `make all` builds the uConsole firmware then. `make flash` and `make first_flash` stop and ask for `KEYBOARD`.
+- **The keyboard runs the firmware of the other keyboard.** It reports the wrong product name then, so `make flash` stops to protect you. Add `FORCE=1` to replace the firmware anyway:
+
+```bash
+make flash KEYBOARD=devterm FORCE=1
+```
+
+The wrong firmware is not expected to do damage, but the keys will be mixed up until you flash the right one.
+
 
 ## Unbricking and recovery
 
@@ -236,7 +292,7 @@ For any of the steps below, you need a way to run shell commands on the host whi
 
 1. **Emergency software reset to bootloader** — If **this firmware is already running** but you need the bootloader (for example the host cannot drive the normal HID reboot path), hold **Left Ctrl** and **Right Ctrl**, then **press the trackball** (trackball click). The firmware handles this before any layer mapping in `non_matrix_action()` and calls `jump_to_bootloader()`, which arms the independent watchdog with a very short timeout and resets the MCU into the bootloader. This is intentionally hard to trigger by accident (both Ctrl keys plus a dedicated non-matrix key).
 
-2. **Hardware switch** — If the MCU is not running this firmware, or the software method above does not help, use the switch on the **back of the keyboard module** to force **update / bootloader (DFU)** mode so the host sees the Maple/STM32 DFU device. Then run `make flash` or `make first_flash` as appropriate (or invoke `dfu-util` with the same options as in the Makefile). This works even when application firmware is missing or broken, as long as the bootloader is intact.
+2. **Hardware switch** — If the MCU is not running this firmware, or the software method above does not help, use the switch on the **back of the keyboard module** to force **update / bootloader (DFU)** mode so the host sees the Maple/STM32 DFU device. Then run `make flash KEYBOARD=uconsole` or `make flash KEYBOARD=devterm` (or invoke `dfu-util` with the same options as in the Makefile). `KEYBOARD` is required here, because a keyboard in bootloader mode can't be identified. This works even when application firmware is missing or broken, as long as the bootloader is intact.
 
 
 ## License

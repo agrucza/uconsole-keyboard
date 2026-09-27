@@ -16,6 +16,11 @@ enum SKEYS {
 
 #define KEY_NONE                0xFFFF
 
+/*
+ * Button IDs. Matrix keys are row * 8 + column, the directly wired keys are
+ * MATRIX_KEYS + index of the KEYn pin. Both keyboards share most of the
+ * positions, the differences are selected by the keyboard variant.
+ */
 #define BUTTON_SELECT           0x00
 #define BUTTON_START            0x01
 #define BUTTON_VOLUME           0x02
@@ -36,6 +41,13 @@ enum SKEYS {
 #define BUTTON_0                0x11
 #define BUTTON_ESC              0x12
 #define BUTTON_TAB              0x13
+#if KEYBOARD_VARIANT == VARIANT_DEVTERM
+/* Arrow keys of the DevTerm are part of the matrix, the D-pad is BUTTON_GAMEPAD_UP etc. */
+#define BUTTON_UP               0x14
+#define BUTTON_DOWN             0x15
+#define BUTTON_LEFT             0x16
+#define BUTTON_RIGHT            0x17
+#endif
 #define BUTTON_Q                0x18
 #define BUTTON_W                0x19
 #define BUTTON_E                0x1A
@@ -70,6 +82,9 @@ enum SKEYS {
 #define BUTTON_APOSTROPHE       0x37
 #define BUTTON_BACKSPACE        0x38
 #define BUTTON_ENTER            0x39
+
+#if KEYBOARD_VARIANT == VARIANT_UCONSOLE
+
 #define BUTTON_FN_LEFT          0x3A
 #define BUTTON_FN_RIGHT         0x3B
 #define BUTTON_SPACE            0x3C
@@ -91,6 +106,33 @@ enum SKEYS {
 #define BUTTON_MOUSE_L          (MATRIX_KEYS + 0x0E)
 #define BUTTON_ALT_RIGHT        (MATRIX_KEYS + 0x0F)
 #define BUTTON_MOUSE_R          (MATRIX_KEYS + 0x10)
+
+#elif KEYBOARD_VARIANT == VARIANT_DEVTERM
+
+#define BUTTON_ALT_RIGHT        0x3A
+#define BUTTON_CTRL_RIGHT       0x3B
+#define BUTTON_SHIFT_RIGHT      0x3C
+#define BUTTON_SPACE            0x3D
+
+#define BUTTON_TRACKBALL        (MATRIX_KEYS + 0x00)
+#define BUTTON_GAMEPAD_UP       (MATRIX_KEYS + 0x01)
+#define BUTTON_GAMEPAD_DOWN     (MATRIX_KEYS + 0x02)
+#define BUTTON_GAMEPAD_LEFT     (MATRIX_KEYS + 0x03)
+#define BUTTON_GAMEPAD_RIGHT    (MATRIX_KEYS + 0x04)
+#define BUTTON_GAMEPAD_A        (MATRIX_KEYS + 0x05)
+#define BUTTON_GAMEPAD_B        (MATRIX_KEYS + 0x06)
+#define BUTTON_GAMEPAD_X        (MATRIX_KEYS + 0x07)
+#define BUTTON_GAMEPAD_Y        (MATRIX_KEYS + 0x08)
+#define BUTTON_SHIFT_LEFT       (MATRIX_KEYS + 0x09)
+#define BUTTON_FN               (MATRIX_KEYS + 0x0A)
+#define BUTTON_CTRL_LEFT        (MATRIX_KEYS + 0x0B)
+#define BUTTON_CMD              (MATRIX_KEYS + 0x0C)
+#define BUTTON_ALT_LEFT         (MATRIX_KEYS + 0x0D)
+#define BUTTON_MOUSE_L          (MATRIX_KEYS + 0x0E)
+#define BUTTON_MOUSE_M          (MATRIX_KEYS + 0x0F)
+#define BUTTON_MOUSE_R          (MATRIX_KEYS + 0x10)
+
+#endif
 
 extern KEYBOARD_STATE keyboard_state;
 

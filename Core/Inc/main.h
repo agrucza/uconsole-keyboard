@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "config.h"
+#include "keyboard_variant.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

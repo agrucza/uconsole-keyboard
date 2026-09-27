@@ -46,7 +46,11 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#if VARIANT_HAS_BACKLIGHT
+#define BACKLIGHT_SET(value) __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (value))
+#else
+#define BACKLIGHT_SET(value) ((void)(value))
+#endif
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -182,7 +186,7 @@ void load_config(void)
   #define TRACKBALL_SCROLL_HORIZONTAL_SPEED(value) trackball_set_scroll_horizontal_speed(current_layer, value)
   #define TRACKBALL_SCROLL_HORIZONTAL_ACCELERATION(value) trackball_set_scroll_horizontal_acceleration(current_layer, value)
 
-  #include "layers.h"
+  #include VARIANT_LAYERS_FILE
 
   #undef LAYER
   #undef BIND
@@ -245,13 +249,19 @@ int main(void)
   non_matrix_init();
   trackball_init();
   
+#if VARIANT_HAS_BACKLIGHT
   // Start PWM for backlight
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+#else
+  // No backlight: release the PWM pin, on this keyboard it only goes to the expansion header
+  HAL_GPIO_DeInit(BL_CTRL_GPIO_Port, BL_CTRL_Pin);
+#endif
 
   // Start TIM2 for precision time
   HAL_TIM_Base_Start_IT(&htim2);
   
+#if VARIANT_HAS_BACKLIGHT
   // Blink on startup
   if (backlight_vals[KEYBOARD_INITIAL_BACKLIGHT_VALUE_ID] == 0) {
     for (int i = 0; i < 2000; i += 100) {
@@ -268,6 +278,7 @@ int main(void)
       HAL_Delay(50);
     }
   }
+#endif
 
   hid_wait_configured();
 
@@ -287,15 +298,15 @@ int main(void)
     if (keyboard_state.leds_timer > time_ms && keyboard_state.leds_interfal > 0) {
       // Blink the LEDs (keyboard backlight)
       uint8_t v = ((keyboard_state.leds_timer - time_ms) / (keyboard_state.leds_interfal / 2)) & 1;
-      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, !v * 0xFFFF);
+      BACKLIGHT_SET(!v * 0xFFFF);
       HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, v ? GPIO_PIN_SET : GPIO_PIN_RESET);
     }
     else if (time_ms - keyboard_state.last_activity_time < KEYBOARD_BACKLIGHT_OFF_TIME * 1000) {
       // Normal backlight
-      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, backlight_vals[keyboard_state.backlight]);
+      BACKLIGHT_SET(backlight_vals[keyboard_state.backlight]);
     } else if (time_ms - keyboard_state.last_activity_time >= KEYBOARD_BACKLIGHT_OFF_TIME * 1000 + KEYBOARD_BACKLIGHT_DIM_OUT_DURATION) {
       // Turn off the backlight
-      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, KEYBOARD_BACKLIGHT_DIMMED_OUT_VALUE);
+      BACKLIGHT_SET(KEYBOARD_BACKLIGHT_DIMMED_OUT_VALUE);
     } else {
       // Dim out the backlight
       uint32_t full_off_remaining_time = keyboard_state.last_activity_time + KEYBOARD_BACKLIGHT_OFF_TIME * 1000 + KEYBOARD_BACKLIGHT_DIM_OUT_DURATION - time_ms;
@@ -303,7 +314,7 @@ int main(void)
         * full_off_remaining_time 
         / KEYBOARD_BACKLIGHT_DIM_OUT_DURATION
         + KEYBOARD_BACKLIGHT_DIMMED_OUT_VALUE;
-      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, dim_out_value);
+      BACKLIGHT_SET(dim_out_value);
     }
 
     // Main tasks

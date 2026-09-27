@@ -13,7 +13,34 @@
 ######################################
 # target
 ######################################
+# Keyboard variant: uconsole or devterm, e.g. "make KEYBOARD=devterm"
+# Without KEYBOARD the firmware is built for the connected keyboard, and for the
+# uConsole if no keyboard can be identified. Flashing is refused in the latter case.
+KEYBOARD_SOURCE = given
+ifndef KEYBOARD
+KEYBOARD := $(shell bash ./tools/check_keyboard_variant.sh --detect 2>/dev/null)
+ifneq ($(KEYBOARD),)
+KEYBOARD_SOURCE = detected
+$(info Detected the $(KEYBOARD) keyboard, building for it. Use KEYBOARD=uconsole or KEYBOARD=devterm to choose yourself.)
+else
+KEYBOARD_SOURCE = default
+KEYBOARD := uconsole
+endif
+endif
+
+# USB_PRODUCT must be the same as VARIANT_USB_PRODUCT_STRING in Core/Inc/keyboard_variant.h,
+# it is used to check that the firmware is flashed to the right keyboard
+ifeq ($(KEYBOARD),uconsole)
 TARGET = uconsole_keyboard
+KEYBOARD_VARIANT = VARIANT_UCONSOLE
+USB_PRODUCT = uConsole
+else ifeq ($(KEYBOARD),devterm)
+TARGET = devterm_keyboard
+KEYBOARD_VARIANT = VARIANT_DEVTERM
+USB_PRODUCT = DevTerm
+else
+$(error Unknown KEYBOARD "$(KEYBOARD)", use "uconsole" or "devterm")
+endif
 
 
 ######################################
@@ -28,8 +55,12 @@ OPT = -O3
 #######################################
 # paths
 #######################################
-# Build path
+# Build path, every keyboard variant has its own so that objects are never mixed
+ifeq ($(KEYBOARD),uconsole)
 BUILD_DIR = build
+else
+BUILD_DIR = build/$(KEYBOARD)
+endif
 
 ######################################
 # source
@@ -131,7 +162,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F103xB
+-DSTM32F103xB \
+-DKEYBOARD_VARIANT=$(KEYBOARD_VARIANT)
 
 
 # AS includes
@@ -211,7 +243,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 	
 $(BUILD_DIR):
-	mkdir $@		
+	mkdir -p $@
 
 #######################################
 # clean up
@@ -220,9 +252,22 @@ clean:
 	-rm -fR $(BUILD_DIR)
 
 #######################################
+# make sure that the firmware is for the connected keyboard
+#######################################
+.PHONY: check_keyboard
+check_keyboard:
+ifeq ($(KEYBOARD_SOURCE),default)
+	@echo "Error: can't identify the connected keyboard (not found, already in bootloader mode or not Linux)." >&2
+	@echo "Choose the firmware yourself with KEYBOARD=uconsole or KEYBOARD=devterm." >&2
+	@false
+else
+	FORCE=$(FORCE) bash ./tools/check_keyboard_variant.sh "$(USB_PRODUCT)"
+endif
+
+#######################################
 # flash the device for the first time
 #######################################
-first_flash: $(BUILD_DIR)/$(TARGET).bin
+first_flash: check_keyboard $(BUILD_DIR)/$(TARGET).bin
 	bash ./to_bootloader_original.sh
 	@if [ "$$(uname -s)" = "Linux" ]; then \
 		sudo dfu-util -d 1EAF:0003 -a 2 -D $(BUILD_DIR)/$(TARGET).bin || true; \
@@ -233,7 +278,7 @@ first_flash: $(BUILD_DIR)/$(TARGET).bin
 #######################################
 # flash the device
 #######################################
-flash: $(BUILD_DIR)/$(TARGET).bin
+flash: check_keyboard $(BUILD_DIR)/$(TARGET).bin
 	bash ./to_bootloader.sh
 	@if [ "$$(uname -s)" = "Linux" ]; then \
 		sudo dfu-util -d 1EAF:0003 -a 2 -D $(BUILD_DIR)/$(TARGET).bin || true; \
