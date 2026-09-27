@@ -33,17 +33,12 @@ static float config_scroll_vertical_exponent[LAYERS_NUM] = {0};
 static float config_scroll_vertical_divisor[LAYERS_NUM] = {0};
 static float config_scroll_horizontal_exponent[LAYERS_NUM] = {0};
 static float config_scroll_horizontal_divisor[LAYERS_NUM] = {0};
-/* Scroll denominator is derived from divisor: divisor/50 so that one speed setting
-   controls both sensitivity and "ticks per step" (filters accidental single touches). */
-#define SCROLL_DIVISOR_TO_DENOMINATOR(divisor)  ((int)((divisor) / 50.0f) > 0 ? (int)((divisor) / 50.0f) : 1)
 
 // Trackball configuration parameters for the current layer
 static float acceleration_exponent;
 static float acceleration_divisor;
-static int scroll_vertical_denominator;
 static float scroll_vertical_exponent;
 static float scroll_vertical_divisor;
-static int scroll_horizontal_denominator;
 static float scroll_horizontal_exponent;
 static float scroll_horizontal_divisor;
 
@@ -86,16 +81,6 @@ static void apply_vector_acceleration(float dx, float dy,
     *out_x = dx * factor;
     *out_y = dy * factor;
 }
-
-#if GLIDER_ENABLED
-static uint16_t glider_sustain_from_speed(float speed)
-{
-    float s = fabsf(speed) * GLIDER_SUSTAIN_SPEED_SCALE;
-    if (s <= 0) return 0;
-    if (s >= (float)GLIDER_SUSTAIN_MAX_MS) return (uint16_t)GLIDER_SUSTAIN_MAX_MS;
-    return (uint16_t)(s + 0.5f);
-}
-#endif
 
 // Interrupt handlers
 void trackball_interrupt_x_neg(void)
@@ -220,10 +205,8 @@ void trackball_load_layer_config(void)
     LOAD_CONFIG(acceleration_divisor, 1000.0f / DEFAULT_TRACKBALL_SPEED);
     LOAD_CONFIG(scroll_vertical_exponent, 1.0f + DEFAULT_TRACKBALL_SCROLL_VERTICAL_ACCELERATION);
     LOAD_CONFIG(scroll_vertical_divisor, 10000.0f / DEFAULT_TRACKBALL_SCROLL_VERTICAL_SPEED);
-    scroll_vertical_denominator = SCROLL_DIVISOR_TO_DENOMINATOR(scroll_vertical_divisor);
     LOAD_CONFIG(scroll_horizontal_exponent, 1.0f + DEFAULT_TRACKBALL_SCROLL_HORIZONTAL_ACCELERATION);
-    LOAD_CONFIG(scroll_horizontal_divisor, 1000.0f / DEFAULT_TRACKBALL_SCROLL_HORIZONTAL_SPEED);
-    scroll_horizontal_denominator = SCROLL_DIVISOR_TO_DENOMINATOR(scroll_horizontal_divisor);
+    LOAD_CONFIG(scroll_horizontal_divisor, 10000.0f / DEFAULT_TRACKBALL_SCROLL_HORIZONTAL_SPEED);
 
     #undef LOAD_CONFIG
 }

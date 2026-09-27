@@ -31,7 +31,7 @@ if ! gcc -Wall -Wextra -Wpedantic -std=c11 -o "$UPLOAD_RESET_BIN" "$UPLOAD_RESET
     exit 1
 fi
 
-"$UPLOAD_RESET_BIN" /dev/tty/ttyACM0 1500
+"$UPLOAD_RESET_BIN" /dev/ttyACM0 1500
 status=$?
 if [ "$status" -ne 0 ]; then
     echo "Error: Failed to reset to original bootloader"

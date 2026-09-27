@@ -188,14 +188,16 @@ This hardware design ensures that modifier keys (Shift, Ctrl, Alt) and gaming co
 
 | Setting | Description |
 |---------|-------------|
+| `backlight_vals` | PWM values of the backlight levels that `SK_KEYBOARD_LIGHT` cycles through (maximum 2000) |
+| `KEYBOARD_INITIAL_BACKLIGHT_VALUE_ID` | Backlight level after power-on (index into `backlight_vals`) |
 | `KEYBOARD_BACKLIGHT_OFF_TIME` | Seconds of inactivity before backlight dims (0 = never) |
 | `KEYBOARD_BACKLIGHT_DIM_OUT_DURATION` | Dim-out animation duration in ms |
+| `KEYBOARD_BACKLIGHT_DIMMED_OUT_VALUE` | Backlight PWM value after dimming out |
 | `KEYBOARD_BACKLIGHT_RESUME_BY_TRACKBALL` | Resume backlight on trackball movement (0/1) |
-| `GLIDER_ENABLED` | Cursor inertia: 1 = coast to stop, 0 = stop instantly |
-| `GLIDER_SUSTAIN_MAX_MS` | Max ms at full speed before braking |
-| `GLIDER_SUSTAIN_SPEED_SCALE` | Sustain scales with speed (higher = fast flicks coast longer) |
-| `GLIDER_DECAY_FACTOR_PER_MS` | Braking speed (0.80 = fast stop, 0.95 = long slide) |
-| `GLIDER_SPEED_EPSILON` | Speed threshold to stop completely |
+| `REPLACE_DOUBLE_SEMICOLON_WITH_APOSTROPHE` | Double press of `;` is replaced with `'`, and `::` with `"` (0/1) |
+| `DOUBLE_PRESS_TIME_MS` | Maximum time between two presses to count as a double press |
+| `VERTICAL_SCROLL_INVERTED` | 0 = traditional scrolling, 1 = natural scrolling |
+| `HORIZONTAL_SCROLL_INVERTED` | 0 = traditional scrolling, 1 = natural scrolling |
 
 
 ## Building
