@@ -80,6 +80,7 @@ Core/Src/hid_gamepad.c \
 Core/Src/hid_consumer.c \
 Core/Src/hid_vendor.c \
 Core/Src/ratemeter.c \
+Core/Src/glider.c \
 Core/Src/leds.c \
 Core/Src/prec_time.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \

@@ -7,12 +7,26 @@
 // default layer
 LAYER(1, "Main");
 
-// A slow roll moves the pointer by 20 to 30 pixels per swipe, a fast flick by
-// 250 to 300. Raise or lower TRACKBALL_SPEED to scale both.
+// On the DevTerm the pointer glides: every pulse of the trackball sets a speed
+// and the pointer moves on smoothly. These four values are the behavior of the
+// stock DevTerm firmware. Try other values without flashing:
+//
+//   sudo python3 tools/trackball_tune.py speed=200
+//
+// TRACKBALL_SPEED         pointer speed in percent of the stock firmware
+// TRACKBALL_ACCELERATION  0 = the pointer speed follows the speed of the ball,
+//                         higher values reward fast rolling
+// TRACKBALL_SMOOTHNESS    how long the pointer glides after a pulse, in percent
+//                         of the stock firmware
+// TRACKBALL_MEASUREMENT   TRACKBALL_MEASURE_AVERAGE: as the stock firmware
+//                         TRACKBALL_MEASURE_FAST: a fast flick is recognized at
+//                         once and goes much further, use a speed of about 50
 TRACKBALL_SPEED(100);
-TRACKBALL_ACCELERATION(0.2f);
-// Scrolling is slower than on the uConsole, because the DevTerm firmware
-// follows the speed of a flick much faster (VARIANT_TRACKBALL_SHORT_STROKES)
+TRACKBALL_ACCELERATION(0.0f);
+TRACKBALL_SMOOTHNESS(100);
+TRACKBALL_MEASUREMENT(TRACKBALL_MEASURE_AVERAGE);
+// Scrolling does not glide. The values are lower than on the uConsole, so that
+// they also fit TRACKBALL_MEASURE_FAST.
 TRACKBALL_SCROLL_VERTICAL_SPEED(50);
 TRACKBALL_SCROLL_VERTICAL_ACCELERATION(0.2f);
 TRACKBALL_SCROLL_HORIZONTAL_SPEED(50);

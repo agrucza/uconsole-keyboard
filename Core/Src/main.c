@@ -185,6 +185,8 @@ void load_config(void)
   #define TRACKBALL_SCROLL_VERTICAL_ACCELERATION(value) trackball_set_scroll_vertical_acceleration(current_layer, value)
   #define TRACKBALL_SCROLL_HORIZONTAL_SPEED(value) trackball_set_scroll_horizontal_speed(current_layer, value)
   #define TRACKBALL_SCROLL_HORIZONTAL_ACCELERATION(value) trackball_set_scroll_horizontal_acceleration(current_layer, value)
+  #define TRACKBALL_SMOOTHNESS(value) trackball_set_smoothness(current_layer, value)
+  #define TRACKBALL_MEASUREMENT(value) trackball_set_measurement(current_layer, value)
 
   #include VARIANT_LAYERS_FILE
 
@@ -197,6 +199,8 @@ void load_config(void)
   #undef TRACKBALL_SCROLL_VERTICAL_ACCELERATION
   #undef TRACKBALL_SCROLL_HORIZONTAL_SPEED
   #undef TRACKBALL_SCROLL_HORIZONTAL_ACCELERATION
+  #undef TRACKBALL_SMOOTHNESS
+  #undef TRACKBALL_MEASUREMENT
 }
 
 /* USER CODE END 0 */

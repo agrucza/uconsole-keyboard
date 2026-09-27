@@ -220,14 +220,44 @@ Everything in this document applies to the DevTerm as well, with these differenc
 | Cmd key | None | `BUTTON_CMD`, bound to Right Meta |
 | Mouse buttons | Left, right | Left, middle (`BUTTON_MOUSE_M`), right |
 | Trackball click | Mouse Middle | Mouse Left |
-| Trackball speed measurement | Running average over many pulses | Mean of the last two pulses. The DevTerm trackball produces only 3 to 6 pulses per swipe, so the speed of a swipe has to be known at once |
-| Scroll speed | `100`, acceleration `0.5f` vertical and `0.3f` horizontal | `50`, acceleration `0.2f`. Lower because a fast flick is recognized as fast |
+| Pointer movement | Every pulse of the trackball moves the pointer at once | The pointer glides, see [Trackball of the DevTerm](#trackball-of-the-devterm) |
+| Scroll speed | `100`, acceleration `0.5f` vertical and `0.3f` horizontal | `50`, acceleration `0.2f` |
 | Keyboard backlight | Yes | No, `SK_KEYBOARD_LIGHT` and the backlight settings in `config.h` have no effect |
 | USB product name | `uConsole` | `DevTerm` |
 
 All other default bindings are the same as on the uConsole, including the Fn combinations, the game layer and the gamepad layer. On the gamepad layer the D-pad sends the gamepad directions and the arrow keys stay arrow keys.
 
-Differences to the stock DevTerm firmware:
+### Trackball of the DevTerm
+
+The trackball of the DevTerm produces only 1 to 6 pulses per swipe. To get an even movement out of that, the pointer glides like in the stock firmware: every pulse sets a speed, and the pointer moves on smoothly for a moment.
+
+The default values are the behavior of the stock firmware. They are set per layer in `layers_devterm.h`:
+
+```c
+TRACKBALL_SPEED(100);           // Pointer speed in percent of the stock firmware
+TRACKBALL_ACCELERATION(0.0f);   // 0 = the pointer follows the speed of the ball, higher = fast rolling is rewarded
+TRACKBALL_SMOOTHNESS(100);      // How long the pointer glides after a pulse, in percent of the stock firmware
+TRACKBALL_MEASUREMENT(TRACKBALL_MEASURE_AVERAGE);   // Or TRACKBALL_MEASURE_FAST
+```
+
+`TRACKBALL_MEASUREMENT` selects how the speed of the ball is measured. `TRACKBALL_MEASURE_AVERAGE` is the running average of the stock firmware. It needs about ten pulses to follow the speed, so a short flick is never recognized as fast. `TRACKBALL_MEASURE_FAST` knows the speed from the second pulse on. A fast flick goes much further with it, so use it with a speed of about 50.
+
+**Live tuning.** You can try values without flashing:
+
+```bash
+sudo python3 tools/trackball_tune.py                        # Show the values in use
+sudo python3 tools/trackball_tune.py speed=200              # Twice as fast as the stock firmware
+sudo python3 tools/trackball_tune.py speed=50 measure=fast
+sudo python3 tools/trackball_tune.py preset stock           # Presets: stock, faster, flick
+sudo python3 tools/trackball_tune.py reload                 # Back to the values of the layer
+```
+
+The values take effect at once and are lost when you change the layer or restart the keyboard. The tool prints the lines for `layers_devterm.h`, put them there and run `make flash` to keep them.
+
+Scrolling with Fn does not glide. It uses the `TRACKBALL_SCROLL_*` values like on the uConsole.
+
+### Differences to the stock DevTerm firmware
+
 
 - Scrolling is done with Fn + trackball, not with the middle mouse button + trackball.
 - The switch on the back of the keyboard does not select between joystick and keyboard mode any more, use the layers instead.
